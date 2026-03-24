@@ -68,6 +68,7 @@ public abstract class ServerBase<T> : MonoBehaviour where T : Schema
                     return;
                 }
                 room = t.Result;
+                sessionId = room.SessionId;
                 Debug.Log("Joined Room " + room.RoomId);
                 RegisterRoomEvents(room);
             }
@@ -86,13 +87,14 @@ public abstract class ServerBase<T> : MonoBehaviour where T : Schema
                     return;
                 }
                 room = t.Result;
+                sessionId = room.SessionId;
                 Debug.Log("Joined Room " + room.RoomId);
                 RegisterRoomEvents(room);
             }
         }
     }
 
-    public void CreateRoom()
+    public void CreateRoom(Dictionary<string, object> options = null)
     {
         if (string.IsNullOrEmpty(roomName))
         {
@@ -107,7 +109,7 @@ public abstract class ServerBase<T> : MonoBehaviour where T : Schema
         }
 
         Debug.Log("CreateRoom: " + roomName);
-        _pendingCreateTask = sharedClient.Create<T>(roomName);
+        _pendingCreateTask = sharedClient.Create<T>(roomName, options);
     }
 
     public void JoinRoomById(string roomId, Dictionary<string, object> options = null)
@@ -129,6 +131,8 @@ public abstract class ServerBase<T> : MonoBehaviour where T : Schema
 
     protected virtual void RegisterRoomEvents(ColyseusRoom<T> room)
     {
+        hasJoined = false;
+
         // Register OnStateChange to detect when room is fully initialized
         // The first state change indicates successful connection and state synchronization
         room.OnStateChange += OnStateChanged;
@@ -150,11 +154,20 @@ public abstract class ServerBase<T> : MonoBehaviour where T : Schema
 
     private void OnStateChanged(T state, bool isFirstState)
     {
+        Debug.Log($"[ServerBase] OnStateChanged isFirstState: {isFirstState}, hasJoined: {hasJoined}");
         if (isFirstState && !hasJoined)
         {
             hasJoined = true;
-            OnJoinRoom();
+            StartCoroutine(CoOnJoinRoom());
         }
+    }
+
+    // room 상태 동기화 위해 0.2초 대기
+    // GameServer 등에서 Time.timeScale == 0 인 동안에도 대기가 끝나게 실시간 기준으로 대기
+    private IEnumerator CoOnJoinRoom()
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
+        OnJoinRoom();
     }
 
     protected virtual void OnLeaveRoom(int code)

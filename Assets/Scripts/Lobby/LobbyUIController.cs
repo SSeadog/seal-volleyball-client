@@ -200,7 +200,14 @@ public class LobbyUIController : MonoBehaviour
     {
         if (btnStartMatching == null) return;
         
-        string mySessionId = GameServer.sessionId;
+        StartCoroutine(CoRefreshBtnStartMatchingVisibility());
+    }
+
+    private IEnumerator CoRefreshBtnStartMatchingVisibility()
+    {
+        yield return new WaitForSeconds(0.2f); // room 상태 업데이트 지연 시간 대기
+
+        string mySessionId = LobbyServer.sessionId;
         string ownerSessionId = LobbyServer.RoomOwnerSessionId;
         bool isOwner = !string.IsNullOrEmpty(ownerSessionId) && mySessionId == ownerSessionId;
         btnStartMatching.gameObject.SetActive(isOwner);

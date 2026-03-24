@@ -10,6 +10,12 @@ public class LobbyServer : ServerBase<LobbyRoomState>
     // new 키워드는 부모의 instance를 숨기고 property로 재정의한다는 의미
     public new static LobbyServer instance => ServerBase<LobbyRoomState>.instance as LobbyServer;
 
+    /// <summary>
+    /// Home에서 코드로 입장하거나 게임에서 return_to_lobby로 넘어올 때 Join할 Colyseus room id.
+    /// 로비 씬에서 Join 시도 후 비움.
+    /// </summary>
+    public static string roomId { get; set; }
+
     /// <summary> 현재 룸의 방장 세션 ID (room state 기준) </summary>
     public static string RoomOwnerSessionId => instance?.room?.State?.roomOwnerSessionId ?? "";
 
@@ -24,6 +30,34 @@ public class LobbyServer : ServerBase<LobbyRoomState>
         
         OnPlayerLeft -= OnPlayerLeftHandler;
         OnPlayerLeft += OnPlayerLeftHandler;
+    }
+
+    private void Start()
+    {
+        Dictionary<string, object> options = BuildJoinOptions();
+
+        // roomId가 있으면 해당 룸으로 접속, 없으면 새 룸 생성
+        if (!string.IsNullOrEmpty(roomId))
+        {
+            Debug.Log($"Attempting to join room with id: {roomId}");
+            JoinRoomById(roomId, options);
+            GameServer.lobbyRoomId = roomId;
+            roomId = null;
+        }
+        else
+        {
+            CreateRoom(options);
+        }
+    }
+
+    private Dictionary<string, object> BuildJoinOptions()
+    {
+        string nickname = PlayerNickname.GetOrCreateNickname();
+        return new Dictionary<string, object>
+        {
+            { "name", nickname },
+            { "nickname", nickname }
+        };
     }
 
     // 메시지 핸들러를 저장하여 나중에 참조할 수 있도록 함
@@ -65,6 +99,8 @@ public class LobbyServer : ServerBase<LobbyRoomState>
     protected override void OnJoinRoom()
     {
         base.OnJoinRoom();
+
+        GameServer.lobbyRoomId = room.RoomId;
 
         // 룸 접속 성공 시 에러 핸들러 제거
         if (room != null)

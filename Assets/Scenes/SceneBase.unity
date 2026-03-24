@@ -460,6 +460,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e38c073f4cfc41a791c0ea450ac132b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneBase
+  splashTransform: {fileID: 0}
+  splashStartScale: 0.5
+  splashEndScale: 1
+  introDuration: 1
 --- !u!4 &1688084717
 Transform:
   m_ObjectHideFlags: 0

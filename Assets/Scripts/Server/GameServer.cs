@@ -9,6 +9,8 @@ public class GameServer : ServerBase<GameRoomState>
     public new static GameServer instance => ServerBase<GameRoomState>.instance as GameServer;
     
     public static string roomId;
+    public static string lobbyRoomId;
+
     public static int myPlayerIndex;
     public static int myTeamIndex;
     
@@ -139,7 +141,8 @@ public class GameServer : ServerBase<GameRoomState>
             {
                 { "sessionId", sessionId },
                 { "playerIndex", myPlayerIndex },
-                { "teamIndex", myTeamIndex}
+                { "teamIndex", myTeamIndex},
+                { "lobbyRoomId", lobbyRoomId},
             };
             Debug.Log($"Joining game room with sessionId: {sessionId}");
         }
@@ -250,7 +253,10 @@ public class GameServer : ServerBase<GameRoomState>
                 VolleyBallGameManager.instance.EndGame();
             }
         });
-        
+
+        // 게임에서 로비로 돌아올 때 클라이언트가 보내는 lobbyRoomId 반영
+        room.OnMessage<Dictionary<string, object>>("return_to_lobby", OnReturnToLobby);
+
         // 'ground' 메시지: 볼 색상을 검은색으로 변경
         room.OnMessage<object>("ground", (message) => {
             if (this == null || room == null) return;
@@ -483,7 +489,7 @@ public class GameServer : ServerBase<GameRoomState>
         // 서버로 ready 메시지 보내기
         Debug.Log("send ready to server");
 
-        Debug.Log($"OnJoinRoom player count: {room.State.players.Count}");
+        // Debug.Log($"OnJoinRoom player count: {room.State.players.Count}");
 
         // 서버에서 전달받은 myPlayerIndex를 기준으로 로컬 플레이어 스폰 (이미 스폰된 sessionId는 제외)
         if (VolleyBallPlayerManager.instance != null)
@@ -693,6 +699,20 @@ public class GameServer : ServerBase<GameRoomState>
         serverPosX = float.MinValue;
         serverPosY = float.MinValue;
         hasServerPosition = false;
+    }
+
+    private void OnReturnToLobby(Dictionary<string, object> message)
+    {
+        Debug.Log("[GameServer] return_to_lobby 메시지 받음");
+        if (this == null || room == null) return;
+
+        if (message == null) return;
+
+        if (message.TryGetValue("lobbyRoomId", out var id) && id != null)
+        {
+            LobbyServer.roomId = id.ToString();
+            Debug.Log($"LobbyServer.roomId set from return_to_lobby: {LobbyServer.roomId}");
+        }
     }
 
     protected override void OnDestroy()
