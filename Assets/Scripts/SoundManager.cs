@@ -95,7 +95,7 @@ public class SoundManager : MonoBehaviour
         bgmSource.clip = clip;
         bgmSource.volume = volume;
         bgmSource.loop = true;
-        // bgmSource.Play();
+        bgmSource.Play();
     }
 
     /// <summary>
@@ -111,7 +111,7 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
-        // PlayBgm(clip, volume);
+        PlayBgm(clip, volume);
     }
 
     public void StopBgm()
@@ -127,7 +127,7 @@ public class SoundManager : MonoBehaviour
     public void PlaySfx(AudioClip clip, float volume = 1f)
     {
         if (sfxSource == null || clip == null) return;
-        // sfxSource.PlayOneShot(clip, volume);
+        sfxSource.PlayOneShot(clip, volume);
     }
 
     /// <summary>
@@ -143,6 +143,6 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
-        // PlaySfx(clip, volume);
+        PlaySfx(clip, volume);
     }
 }
