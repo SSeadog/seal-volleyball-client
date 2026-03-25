@@ -27,13 +27,14 @@ public class VolleyBallPlayerManager : MonoBehaviour
     // 기본 스폰: 내부 인덱스를 사용 (세션 ID는 알 수 없으므로 null)
     public GameObject SpawnPlayer(bool isAi)
     {
-        var player = SpawnPlayer(isAi, currentPlayerIndex, null);
+        var player = SpawnPlayer(isAi, currentPlayerIndex, null, null);
         currentPlayerIndex++;
         return player;
     }
 
     // 지정된 인덱스로 스폰
-    public GameObject SpawnPlayer(bool isAi, int index, string sessionId)
+    // 닉네임 라벨 표시까지 포함해서 스폰
+    public GameObject SpawnPlayer(bool isAi, int index, string sessionId, string playerName)
     {
         GameObject playerInstance;
 
@@ -81,6 +82,15 @@ public class VolleyBallPlayerManager : MonoBehaviour
             // isMyPlayer는 false (원격 플레이어이므로)
             playerView.Initialize(index, sessionId, isMyPlayer);
         }
+
+        // 닉네임 표시(프리팹에 있는 TextMeshPro에 값 세팅)
+        string nickname = playerName;
+        if (string.IsNullOrEmpty(nickname) && isMyPlayer)
+            nickname = PlayerNickname.GetNickname();
+
+        PlayerView pv = playerInstance.GetComponent<PlayerView>();
+        if (pv != null)
+            pv.SetNickname(nickname);
 
         return playerInstance;
     }

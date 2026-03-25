@@ -10,6 +10,9 @@ public class SceneBase : MonoBehaviour
         Debug.Log("(인트로 노출) 1초 후 HomeScene으로 이동");
 
         StartCoroutine(MoveToHomeScene());
+
+        // 씬 전환 시 닉네임 초기화
+        PlayerNickname.ClearNickname();
     }
 
     IEnumerator MoveToHomeScene()

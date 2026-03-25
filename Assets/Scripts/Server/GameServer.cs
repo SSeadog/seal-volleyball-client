@@ -143,6 +143,7 @@ public class GameServer : ServerBase<GameRoomState>
                 { "playerIndex", myPlayerIndex },
                 { "teamIndex", myTeamIndex},
                 { "lobbyRoomId", lobbyRoomId},
+                { "nickname", PlayerNickname.GetNickname() }
             };
             Debug.Log($"Joining game room with sessionId: {sessionId}");
         }
@@ -504,7 +505,8 @@ public class GameServer : ServerBase<GameRoomState>
                 VolleyBallPlayerManager.instance.SpawnPlayer(
                     room.State.players[i].isAI,
                     (int)room.State.players[i].playerIndex,
-                    sid
+                    sid,
+                    room.State.players[i].name
                 );
             }
         }
@@ -557,7 +559,8 @@ public class GameServer : ServerBase<GameRoomState>
         VolleyBallPlayerManager.instance.SpawnPlayer(
             player.isAI,
             (int)player.playerIndex,
-            player.sessionId
+            player.sessionId,
+            player.name
         );
     }
 

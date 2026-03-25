@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class PlayerView : MonoBehaviour
 {
@@ -12,7 +13,10 @@ public class PlayerView : MonoBehaviour
     private float serverPosX = float.MinValue;
     private float serverPosY = float.MinValue;
     private bool hasServerPosition = false;
-    
+
+    [Header("UI")]
+    [SerializeField] private TMP_Text nicknameText;
+
     /// <summary>
     /// PlayerView를 초기화합니다.
     /// </summary>
@@ -42,6 +46,12 @@ public class PlayerView : MonoBehaviour
         serverPosX = posX;
         serverPosY = posY;
         hasServerPosition = true;
+    }
+
+    public void SetNickname(string nickname)
+    {
+        if (nicknameText == null) return;
+        nicknameText.text = nickname ?? "";
     }
     
     void Update()
