@@ -145,6 +145,14 @@ public abstract class ServerBase<T> : MonoBehaviour where T : Schema
         
         // Note: playerJoined/playerLeft 메시지는 각 구현체에서 필요시 등록
         // (예: LobbyServer에서만 사용, GameServer에서는 사용하지 않음)
+
+        // 일부 환경/버전에서는 Join() Task 완료 시점에 첫 state를 이미 수신해
+        // OnStateChange(isFirstState=true)를 놓칠 수 있음. 이 경우 State가 이미 있으면 즉시 Join 처리.
+        if (!hasJoined && room != null && room.State != null)
+        {
+            hasJoined = true;
+            StartCoroutine(CoOnJoinRoom());
+        }
     }
 
     protected virtual void OnRoomError(int code, string message)
@@ -152,21 +160,46 @@ public abstract class ServerBase<T> : MonoBehaviour where T : Schema
         Debug.LogError($"{GetType().Name}: Room error - {message} (code: {code})");
     }
 
+    /// <summary>
+    /// OnJoinRoom()을 호출해도 안전한 시점인지 판단.
+    /// 기본은 room/State/SessionId 준비 여부만 확인하고, 구현체에서 필요 필드를 추가로 체크할 수 있음.
+    /// </summary>
+    protected virtual bool IsRoomReadyForOnJoinRoom()
+    {
+        return room != null && room.State != null && !string.IsNullOrEmpty(room.SessionId);
+    }
+
     private void OnStateChanged(T state, bool isFirstState)
     {
         Debug.Log($"[ServerBase] OnStateChanged isFirstState: {isFirstState}, hasJoined: {hasJoined}");
-        if (isFirstState && !hasJoined)
+        // isFirstState=true를 놓친 경우를 대비해, 첫 콜백에서 state가 유효하면 join 처리
+        if (!hasJoined && (isFirstState || state != null))
         {
             hasJoined = true;
             StartCoroutine(CoOnJoinRoom());
         }
     }
 
-    // room 상태 동기화 위해 0.2초 대기
-    // GameServer 등에서 Time.timeScale == 0 인 동안에도 대기가 끝나게 실시간 기준으로 대기
+    // room / State / 세션 정보가 준비될 때까지 대기 (고정 지연 대신 조건 충족 시 즉시 진행)
+    // Time.timeScale == 0 이어도 진행되도록 unscaledDeltaTime 기준 타임아웃
     private IEnumerator CoOnJoinRoom()
     {
-        yield return new WaitForSecondsRealtime(0.2f);
+        // yield return new WaitForSecondsRealtime(0.1f);
+        const float timeoutSeconds = 15f;
+        float elapsed = 0f;
+
+        while (!IsRoomReadyForOnJoinRoom())
+        {
+            if (elapsed >= timeoutSeconds)
+            {
+                Debug.LogError($"{GetType().Name}: CoOnJoinRoom timed out after {timeoutSeconds}s (room not ready for OnJoinRoom).");
+                yield break;
+            }
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
         OnJoinRoom();
     }
 

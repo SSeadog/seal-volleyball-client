@@ -358,6 +358,13 @@ public class GameServer : ServerBase<GameRoomState>
         room.OnStateChange += OnGameStateChanged;
     }
 
+    protected override bool IsRoomReadyForOnJoinRoom()
+    {
+        if (!base.IsRoomReadyForOnJoinRoom()) return false;
+        // GameServer는 OnJoinRoom()에서 players를 순회하므로, players가 준비될 때까지 추가로 기다림
+        return room.State.players != null;
+    }
+
     /// <summary>
     /// 서버에서 전달된 메시지에서 sessionId를 추출합니다.
     /// </summary>
@@ -495,6 +502,12 @@ public class GameServer : ServerBase<GameRoomState>
         // 서버에서 전달받은 myPlayerIndex를 기준으로 로컬 플레이어 스폰 (이미 스폰된 sessionId는 제외)
         if (VolleyBallPlayerManager.instance != null)
         {
+            if (room?.State?.players == null)
+            {
+                Debug.LogWarning("[GameServer] OnJoinRoom called but State.players is not ready yet.");
+                return;
+            }
+
             for (int i = 0; i < room.State.players.Count; i++)
             {
                 string sid = room.State.players[i].sessionId;
