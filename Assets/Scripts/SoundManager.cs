@@ -12,6 +12,12 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance { get; private set; }
 
+    private const string PrefKeyBgmVolume = "volume_bgm";
+    private const string PrefKeySfxVolume = "volume_sfx";
+
+    private float bgmVolume = 1f;
+    private float sfxVolume = 1f;
+
     [Header("Audio Sources")]
     [SerializeField] private AudioSource bgmSource;
     [SerializeField] private AudioSource sfxSource;
@@ -41,7 +47,48 @@ public class SoundManager : MonoBehaviour
             bgmSource.loop = true;
         }
 
+        LoadVolumes();
+        ApplyVolumes();
+
         BuildDictionaries();
+    }
+
+    private void LoadVolumes()
+    {
+        bgmVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(PrefKeyBgmVolume, 1f));
+        sfxVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(PrefKeySfxVolume, 1f));
+    }
+
+    private void ApplyVolumes()
+    {
+        if (bgmSource != null)
+        {
+            bgmSource.volume = bgmVolume;
+        }
+    }
+
+    public float GetBgmVolume() => bgmVolume;
+    public float GetSfxVolume() => sfxVolume;
+
+    public void SetBgmVolume(float value, bool save = true)
+    {
+        bgmVolume = Mathf.Clamp01(value);
+        if (bgmSource != null) bgmSource.volume = bgmVolume;
+        if (save)
+        {
+            PlayerPrefs.SetFloat(PrefKeyBgmVolume, bgmVolume);
+            PlayerPrefs.Save();
+        }
+    }
+
+    public void SetSfxVolume(float value, bool save = true)
+    {
+        sfxVolume = Mathf.Clamp01(value);
+        if (save)
+        {
+            PlayerPrefs.SetFloat(PrefKeySfxVolume, sfxVolume);
+            PlayerPrefs.Save();
+        }
     }
 
     private void BuildDictionaries()
@@ -93,7 +140,7 @@ public class SoundManager : MonoBehaviour
         }
 
         bgmSource.clip = clip;
-        bgmSource.volume = volume;
+        bgmSource.volume = Mathf.Clamp01(volume) * bgmVolume;
         bgmSource.loop = true;
         bgmSource.Play();
     }
@@ -127,7 +174,7 @@ public class SoundManager : MonoBehaviour
     public void PlaySfx(AudioClip clip, float volume = 1f)
     {
         if (sfxSource == null || clip == null) return;
-        sfxSource.PlayOneShot(clip, volume);
+        sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume) * sfxVolume);
     }
 
     /// <summary>

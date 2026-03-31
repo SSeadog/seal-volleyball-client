@@ -11,7 +11,9 @@ public class HomeUIController : MonoBehaviour
     [SerializeField] private Button btnCreateLobby;
     [SerializeField] private Button btnHowToPlay;
     [SerializeField] private PopupHowToPlay popupHowToPlay;
-    
+    [SerializeField] private Button btnSettings;
+    [SerializeField] private HomeSettingsPopup settingsPopup;
+
     void Start()
     {
         InitializeNickname();
@@ -34,6 +36,14 @@ public class HomeUIController : MonoBehaviour
             if (SoundManager.Instance != null)
                 SoundManager.Instance.PlaySfx("Btn_Click");
             popupHowToPlay.ShowPopup();
+        });
+
+        btnSettings.onClick.AddListener(() =>
+        {
+            if (SoundManager.Instance != null)
+                SoundManager.Instance.PlaySfx("Btn_Click");
+            
+            settingsPopup.Show();
         });
     }
 
