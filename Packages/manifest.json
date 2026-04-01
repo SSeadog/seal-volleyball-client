@@ -26,7 +26,6 @@
     "com.unity.ugui": "2.0.0",
     "com.unity.visualscripting": "1.9.9",
     "com.youngwoocho02.unity-cli-connector": "https://github.com/youngwoocho02/unity-cli.git?path=unity-connector",
-    "im.toss.apps-in-toss-unity-sdk": "https://github.com/toss/apps-in-toss-unity-sdk.git",
     "io.colyseus.sdk": "https://github.com/colyseus/colyseus-unity3d.git#upm",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
