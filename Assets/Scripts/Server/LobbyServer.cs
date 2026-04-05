@@ -170,6 +170,12 @@ public class LobbyServer : ServerBase<LobbyRoomState>
     private void OnPlayerJoinedHandler(Player player)
     {
         LobbyUIController.instance.SetPlayerCard(player);
+
+        // 본인 플레이어 조인 시
+        if (player.sessionId == room.SessionId)
+        {
+            LobbyUIController.instance.RefreshBtnStartMatchingVisibility();
+        }
     }
 
     private void OnPlayerLeftHandler(Player player)
