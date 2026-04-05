@@ -589,10 +589,11 @@ public class GameServer : ServerBase<GameRoomState>
         if (room == null) return;
 
         // 현재 fixedTickCount를 tick에 설정하여 서버와 입력을 동기화
-        input.tick = fixedTickCount;
+        // 레이턴시 고려하여 tick 증가(레이턴시 / deltaTime)
+        input.tick = fixedTickCount + (int)(lastLatencyMs / PhysicsConstants.DELTA_TIME);
 
         await room.Send(0, input);
-        Debug.Log($"GameServer: Sent o message with input {input}");
+        Debug.Log($"GameServer: Sent 0 message with input {input} correction: {lastLatencyMs / PhysicsConstants.DELTA_TIME}");
     }
 
     /// <summary>
