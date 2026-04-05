@@ -5,7 +5,7 @@ public static class PhysicsConstants
 {
     // 중력 및 시간
     public const float GRAVITY = -9.8f; // 중력 가속도 (m/s²)
-    public const float DELTA_TIME = 1f / 60f; // 60 FPS 기준 deltaTime (초)
+    public const float DELTA_TIME = 16f; // 60 FPS 기준 deltaTime (ms)
 
     // 볼 관련
     public const float BALL_RADIUS = 0.3f; // 볼의 반지름
